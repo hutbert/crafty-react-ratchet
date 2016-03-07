@@ -1,0 +1,97 @@
+<html>
+  <head></head>
+  <body>
+    <div id="game"></div>
+    <script type="text/javascript" src="https://rawgithub.com/craftyjs/Crafty/release/dist/crafty-min.js"></script>
+    <script>
+      Crafty.init(500,500, document.getElementById('game'));
+
+      Crafty.c('dude',{
+      	init: function(){
+      		this.addComponent('2D, Canvas, Color, Motion, Solid');
+      		this.w=30;
+      		this.h=30;
+      	},
+      	remove: function(){
+      		Crafty.log('dumped paddle');
+      	},
+      	place: function(x,y){
+				this.x = x;
+				this.y = y; 
+				return this;     	
+      	}      
+      });
+
+		      
+		var ws_url = 'ws://'+window.location.hostname+':8080/ws';
+		var conn = new WebSocket(ws_url);
+		var user_color = "000000";
+		var user_name = "Me";
+		var dudes = {};
+		
+		conn.onopen = function() {
+			//display_message("<b>SUCCESS: Established connection to chat server</b>");
+			console.log('connected');
+		}
+		conn.onerror = function() {
+			console.log('error');
+		}
+		conn.onclose = function() {
+			console.log('closed');
+		}
+		
+		conn.onmessage = function(e) {  
+			var data = JSON.parse(e.data);
+			switch (data.type) {
+				case "update":
+					data.players.forEach(function(player){
+						if (player.p){
+						dudes[player.name].x = player.p._x;
+						dudes[player.name].y = player.p._y;
+						}
+						dudes[player.name].vx = player.v.x;
+						dudes[player.name].vy = player.v.y;
+						
+					});
+
+				break;
+				
+				case "newdude":
+					console.log(data);
+					dudes[data.name] = Crafty.e('dude').place(10,10).color('black');
+					if (data.current==true) user_name = data.name;
+			
+				break;
+				
+			}				
+		}
+		
+		function send_message(payload) {
+			conn.send(JSON.stringify(payload));
+		}
+		
+		var player = Crafty.e();
+		player.bind('KeyDown', function(e) {
+			console.log(user_name);
+			update = {
+				'key': e.key,
+				'pos': dudes[user_name].pos()			
+			}
+			send_message(update);		
+		});
+		
+
+      
+      
+      
+
+
+
+		      
+
+      
+      
+
+    </script>
+  </body>
+</html>

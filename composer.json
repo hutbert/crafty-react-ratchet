@@ -1,0 +1,9 @@
+{
+	"require": {
+		"php": ">5.4",
+		"cboden/Ratchet": "0.3.*",
+		"react/partial": "~2.0",
+		"react/http": "*"
+	}
+}
+
